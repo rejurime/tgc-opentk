@@ -3,14 +3,18 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using System.Drawing;
+using TGC.OpenTK.Geometry;
 
 namespace TGC.OpenTK
 {
 	class Game : GameWindow
 	{
+		Triangle triangle1;
+		Triangle triangle2;
+
 		/// <summary>Creates a 800x600 window with the specified title.</summary>
-		public Game()
-			: base(800, 600, GraphicsMode.Default, "Probando OpenTK...")
+		public Game(int width, int height, string title) : base(width, height, GraphicsMode.Default, title)
 		{
 			VSync = VSyncMode.On;
 		}
@@ -21,8 +25,15 @@ namespace TGC.OpenTK
 		{
 			base.OnLoad(e);
 
-			GL.ClearColor(0.1f, 0.2f, 0.5f, 0.0f);
+			GL.ClearColor(Color.SteelBlue);
 			GL.Enable(EnableCap.DepthTest);
+
+			triangle1 = new Triangle (new Vector3(0f, 0f, 4.0f), new Vector3(1.0f, 1.0f, 4.0f), new Vector3(0.0f, 1.0f, 4.0f), Color.DarkBlue);
+
+			Vector3 vertice1 = new Vector3(-1f, -1f, 4f);
+			Vector3 vertice2 = new Vector3(1f, -1f, 4f);
+			Vector3 vertice3 = new Vector3(0f, 0f, 4f);
+			triangle2 = new Triangle (vertice1, Color.Blue, vertice2, Color.Red, vertice3, Color.Green);
 		}
 
 		/// <summary>
@@ -50,8 +61,10 @@ namespace TGC.OpenTK
 		{
 			base.OnUpdateFrame(e);
 
-			if (Keyboard[Key.Escape])
-				Exit();
+			if (Keyboard [Key.Escape]) 
+			{
+				Exit ();
+			}
 		}
 
 		/// <summary>
@@ -65,16 +78,11 @@ namespace TGC.OpenTK
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 			Matrix4 modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitZ, Vector3.UnitY);
-			GL.MatrixMode(MatrixMode.Modelview);
+			GL.MatrixMode(MatrixMode.Modelview);	
 			GL.LoadMatrix(ref modelview);
 
-			GL.Begin(BeginMode.Triangles);
-
-			GL.Color3(1.0f, 1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 4.0f);
-			GL.Color3(1.0f, 0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 4.0f);
-			GL.Color3(0.2f, 0.9f, 1.0f); GL.Vertex3(0.0f, 1.0f, 4.0f);
-
-			GL.End();
+			triangle1.Render();
+			triangle2.Render();
 
 			SwapBuffers();
 		}
