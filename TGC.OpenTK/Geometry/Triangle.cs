@@ -1,5 +1,4 @@
-﻿using System;
-using OpenTK;
+﻿using OpenTK;
 using System.Drawing;
 using OpenTK.Graphics.OpenGL;
 
@@ -36,7 +35,7 @@ namespace TGC.OpenTK.Geometry
 		}
 
 		public void Render(){
-			GL.Begin(BeginMode.Triangles);
+			GL.Begin(PrimitiveType.Triangles);
 			GL.Color3(ColorVertice1);
 			GL.Vertex3(Vertice1);
 			GL.Color3(ColorVertice2);
@@ -47,4 +46,3 @@ namespace TGC.OpenTK.Geometry
 		}
 	}
 }
-

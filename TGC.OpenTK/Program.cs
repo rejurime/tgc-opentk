@@ -16,7 +16,8 @@ namespace TGC.OpenTK
 			// The 'using' idiom guarantees proper resource cleanup.
 			// We request 30 UpdateFrame events per second, and unlimited
 			// RenderFrame events (as fast as the computer can handle).
-			using (Game game = new Game(device.Width,device.Height, "Probando OpenTK..."))
+			//using (Game game = new Game(device.Width,device.Height, "Probando OpenTK..."))
+			using (HelloGL3 game = new HelloGL3())
 			{
 				game.Run(30);
 			}
