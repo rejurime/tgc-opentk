@@ -4,7 +4,8 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System.Drawing;
-using TGC.OpenTK.Geometry;
+using TGC.OpenTK.Geometries;
+using System.IO;
 
 namespace TGC.OpenTK
 {
@@ -12,6 +13,13 @@ namespace TGC.OpenTK
 	{
 		Triangle triangle1;
 		Triangle triangle2;
+		Box box;
+
+		int modelviewMatrixLocation;
+		int projectionMatrixLocation;
+
+		Matrix4 projectionMatrix;
+		Matrix4 modelviewMatrix;
 
 		/// <summary>Creates a 800x600 window with the specified title.</summary>
 		public Game(int width, int height, string title) : base(width, height, GraphicsMode.Default, title)
@@ -34,6 +42,25 @@ namespace TGC.OpenTK
 			Vector3 vertice2 = new Vector3(1f, -1f, 4f);
 			Vector3 vertice3 = new Vector3(0f, 0f, 4f);
 			triangle2 = new Triangle (vertice1, Color.Blue, vertice2, Color.Red, vertice3, Color.Green);
+
+			box = new Box();
+			box.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
+
+			SetUniforms();
+		}
+
+		void SetUniforms()
+		{
+			// Set uniforms
+			projectionMatrixLocation = GL.GetUniformLocation(box.ShaderProgramHandle, "projection_matrix");
+			modelviewMatrixLocation = GL.GetUniformLocation(box.ShaderProgramHandle, "modelview_matrix");
+
+			float aspectRatio = ClientSize.Width / (float)(ClientSize.Height);
+			Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, aspectRatio, 1, 100, out projectionMatrix);
+			modelviewMatrix = Matrix4.LookAt(new Vector3(0, 3, 5), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+
+			GL.UniformMatrix4(projectionMatrixLocation, false, ref projectionMatrix);
+			GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
 		}
 
 		/// <summary>
@@ -61,6 +88,10 @@ namespace TGC.OpenTK
 		{
 			base.OnUpdateFrame(e);
 
+			Matrix4 rotation = Matrix4.CreateRotationY((float)e.Time);
+			Matrix4.Mult(ref rotation, ref modelviewMatrix, out modelviewMatrix);
+			GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
+
 			if (Keyboard [Key.Escape]) 
 			{
 				Exit ();
@@ -83,6 +114,7 @@ namespace TGC.OpenTK
 
 			triangle1.Render();
 			triangle2.Render();
+			box.Render();
 
 			SwapBuffers();
 		}

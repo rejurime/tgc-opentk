@@ -2,7 +2,7 @@
 using System.Drawing;
 using OpenTK.Graphics.OpenGL;
 
-namespace TGC.OpenTK.Geometry
+namespace TGC.OpenTK.Geometries
 {
 	public class Triangle
 	{
