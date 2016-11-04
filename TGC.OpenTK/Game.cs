@@ -43,7 +43,31 @@ namespace TGC.OpenTK
 			Vector3 vertice3 = new Vector3(0f, 0f, 4f);
 			triangle2 = new Triangle (vertice1, Color.Blue, vertice2, Color.Red, vertice3, Color.Green);
 
-			box = new Box();
+			Vector3[] positionVboData = new[] {
+				new Vector3(-1.0f, -1.0f, 1.0f),
+				new Vector3(1.0f, -1.0f, 1.0f),
+				new Vector3(1.0f, 1.0f, 1.0f),
+				new Vector3(-1.0f, 1.0f, 1.0f),
+				new Vector3(-1.0f, -1.0f, -1.0f),
+				new Vector3(1.0f, -1.0f, -1.0f),
+				new Vector3(1.0f, 1.0f, -1.0f),
+				new Vector3(-1.0f, 1.0f, -1.0f) };
+
+			int[] indicesVboData = new[] {
+				// front face
+				0, 1, 2, 2, 3, 0,
+                // top face
+                3, 2, 6, 6, 7, 3,
+                // back face
+                7, 6, 5, 5, 4, 7,
+                // left face
+                4, 0, 3, 3, 7, 4,
+                // bottom face
+                0, 1, 5, 5, 4, 0,
+                // right face
+				1, 5, 6, 6, 2, 1 };
+
+			box = new Box(positionVboData, indicesVboData);
 			box.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
 
 			SetUniforms();

@@ -6,51 +6,33 @@ namespace TGC.OpenTK.Geometries
 {
 	public abstract class Geometry
 	{
-		Vector3[] positionVboData = {
-			new Vector3(-1.0f, -1.0f,  1.0f),
-			new Vector3( 1.0f, -1.0f,  1.0f),
-			new Vector3( 1.0f,  1.0f,  1.0f),
-			new Vector3(-1.0f,  1.0f,  1.0f),
-			new Vector3(-1.0f, -1.0f, -1.0f),
-			new Vector3( 1.0f, -1.0f, -1.0f),
-			new Vector3( 1.0f,  1.0f, -1.0f),
-			new Vector3(-1.0f,  1.0f, -1.0f) };
-
-		int[] indicesVboData = {
-				// front face
-                0, 1, 2, 2, 3, 0,
-                // top face
-                3, 2, 6, 6, 7, 3,
-                // back face
-                7, 6, 5, 5, 4, 7,
-                // left face
-                4, 0, 3, 3, 7, 4,
-                // bottom face
-                0, 1, 5, 5, 4, 0,
-                // right face
-                1, 5, 6, 6, 2, 1, };
+		internal Vector3[] PositionVboData { get; set;}
+		internal int[] IndicesVboData { get; set;}
 		
 		int vaoHandle;
 		int positionVboHandle;
 		int normalVboHandle;
 		int eboHandle;
 
-		string vertexShaderSource;
-		string fragmentShaderSource;
-		int vertexShaderHandle;
-		int fragmentShaderHandle;
-		int shaderProgramHandle;
+		string VertexShaderSource { get; set; }
+		string FragmentShaderSource { get; set; } 
+		int VertexShaderHandle { get; set; }
+		int FragmentShaderHandle { get; set; }
+		public int ShaderProgramHandle { get; set;}
 
-		public Geometry()
+		//TODO hay que ver si realmente deberia estar este constructor vacio
+		internal Geometry()
 		{
-			CreateVBOs();
-			CreateVAOs();
+			
 		}
 
-		public int ShaderProgramHandle 
-		{ 
-			get { return this.shaderProgramHandle;} 
-			set { this.shaderProgramHandle = value;} 
+		public Geometry(Vector3[] positionVboData, int[] indicesVboData)
+		{
+			PositionVboData = positionVboData;
+			IndicesVboData = indicesVboData;
+
+			CreateVBOs();
+			CreateVAOs();
 		}
 
 		public void AttachShaders(string vertexShader, string fragmentShader)
@@ -59,51 +41,49 @@ namespace TGC.OpenTK.Geometries
 			AttachFragmentShader(fragmentShader);
 
 			// Create program
-			shaderProgramHandle = GL.CreateProgram();
+			ShaderProgramHandle = GL.CreateProgram();
 
-			GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
-			GL.AttachShader(shaderProgramHandle, fragmentShaderHandle);
+			GL.AttachShader(ShaderProgramHandle, VertexShaderHandle);
+			GL.AttachShader(ShaderProgramHandle, FragmentShaderHandle);
 
-			GL.LinkProgram(shaderProgramHandle);
+			GL.LinkProgram(ShaderProgramHandle);
 
-			Console.WriteLine(GL.GetProgramInfoLog(shaderProgramHandle));
+			Console.WriteLine(GL.GetProgramInfoLog(ShaderProgramHandle));
 
-			GL.UseProgram(shaderProgramHandle);
+			GL.UseProgram(ShaderProgramHandle);
 		}
 
 		void AttachVertexShader(string vertexShader)
 		{
-			this.vertexShaderSource = vertexShader;
-			this.vertexShaderHandle = GL.CreateShader(ShaderType.VertexShader);
-			GL.ShaderSource(vertexShaderHandle, vertexShaderSource);
-			GL.CompileShader(vertexShaderHandle);
-			Console.WriteLine(GL.GetShaderInfoLog(vertexShaderHandle));
+			VertexShaderSource = vertexShader;
+			VertexShaderHandle = GL.CreateShader(ShaderType.VertexShader);
+			GL.ShaderSource(VertexShaderHandle, VertexShaderSource);
+			GL.CompileShader(VertexShaderHandle);
+			Console.WriteLine(GL.GetShaderInfoLog(VertexShaderHandle));
 		}
 
 		void AttachFragmentShader(string fragmentShader)
 		{
-			this.fragmentShaderSource = fragmentShader;
-			this.fragmentShaderHandle = GL.CreateShader(ShaderType.FragmentShader);
-			GL.ShaderSource(fragmentShaderHandle, fragmentShaderSource);
-			GL.CompileShader(fragmentShaderHandle);
-			Console.WriteLine(GL.GetShaderInfoLog(fragmentShaderHandle));
+			FragmentShaderSource = fragmentShader;
+			FragmentShaderHandle = GL.CreateShader(ShaderType.FragmentShader);
+			GL.ShaderSource(FragmentShaderHandle, FragmentShaderSource);
+			GL.CompileShader(FragmentShaderHandle);
+			Console.WriteLine(GL.GetShaderInfoLog(FragmentShaderHandle));
 		}
 
 		void CreateVBOs()
 		{
 			GL.GenBuffers(1, out positionVboHandle);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.BufferData(BufferTarget.ArrayBuffer,
-				new IntPtr(positionVboData.Length * Vector3.SizeInBytes),
-				positionVboData, BufferUsageHint.StaticDraw);
+			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVboData.Length * Vector3.SizeInBytes), PositionVboData, BufferUsageHint.StaticDraw);
 
 			GL.GenBuffers(1, out normalVboHandle);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(positionVboData.Length * Vector3.SizeInBytes), positionVboData, BufferUsageHint.StaticDraw);
+			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVboData.Length * Vector3.SizeInBytes), PositionVboData, BufferUsageHint.StaticDraw);
 
 			GL.GenBuffers(1, out eboHandle);
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-			GL.BufferData(BufferTarget.ElementArrayBuffer, new IntPtr(sizeof(uint) * indicesVboData.Length), indicesVboData, BufferUsageHint.StaticDraw);
+			GL.BufferData(BufferTarget.ElementArrayBuffer, new IntPtr(sizeof(uint) * IndicesVboData.Length), IndicesVboData, BufferUsageHint.StaticDraw);
 
 			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
@@ -121,12 +101,12 @@ namespace TGC.OpenTK.Geometries
 			GL.EnableVertexAttribArray(0);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
 			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-			GL.BindAttribLocation(shaderProgramHandle, 0, "in_position");
+			GL.BindAttribLocation(ShaderProgramHandle, 0, "in_position");
 
 			GL.EnableVertexAttribArray(1);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
 			GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-			GL.BindAttribLocation(shaderProgramHandle, 1, "in_normal");
+			GL.BindAttribLocation(ShaderProgramHandle, 1, "in_normal");
 
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
 
@@ -136,7 +116,7 @@ namespace TGC.OpenTK.Geometries
 		public void Render()
 		{
 			GL.BindVertexArray(vaoHandle);
-			GL.DrawElements(PrimitiveType.Triangles, indicesVboData.Length, DrawElementsType.UnsignedInt, IntPtr.Zero);
+			GL.DrawElements(PrimitiveType.Triangles, IndicesVboData.Length, DrawElementsType.UnsignedInt, IntPtr.Zero);
 		}
 	}
 }
