@@ -52,7 +52,7 @@
     <Compile Include="Geometries\Triangle.cs" />
     <Compile Include="Geometries\Geometry.cs" />
     <Compile Include="Geometries\Box.cs" />
-    <Compile Include="Cameras\Camera.cs" />
+    <Compile Include="Cameras\StaticCamera.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Geometries\" />

@@ -36,7 +36,6 @@ namespace TGC.OpenTK.Geometries
 
 		}
 
-
         /// <summary>
         ///     Crea una caja con el centro y tamaño especificado.
         /// </summary>

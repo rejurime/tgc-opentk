@@ -11,20 +11,22 @@ namespace TGC.OpenTK
 {
 	class Game : GameWindow
 	{
+		StaticCamera camera;
+
 		Triangle triangle1;
 		Triangle triangle2;
+
 		Box box1;
 		Box box2;
 
-		int modelviewMatrixLocation;
-		int projectionMatrixLocation;
-
-		Matrix4 projectionMatrix;
-		Matrix4 modelviewMatrix;
-
-		/// <summary>Creates a 800x600 window with the specified title.</summary>
-		public Game(int width, int height, string title) : base(width, height, GraphicsMode.Default, title)
+		/// <summary>
+		/// Creates a window with the specified size and title.
+		/// </summary>
+		/// <param name="width">Width.</param>
+		/// <param name="height">Height.</param>
+		public Game(int width, int height) : base(width, height, GraphicsMode.Default)
 		{
+			Title = "Probando OpenTK...";
 			VSync = VSyncMode.On;
 		}
 
@@ -47,19 +49,25 @@ namespace TGC.OpenTK
 			box2 = new Box(new Vector3(1,1,1), new Vector3(1,1,1), Color.SteelBlue);
 			box2.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
 
+			camera = new StaticCamera(new Vector3(10, 5, 0), Vector3.Zero);
+
 			SetUniforms();
 		}
 
+		/// <summary>
+		/// Sets the uniforms.
+		/// </summary>
 		void SetUniforms()
 		{
 			// Set uniforms
-			projectionMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "projection_matrix");
-			modelviewMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "modelview_matrix");
+			int projectionMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "projection_matrix");
+			int modelviewMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "modelview_matrix");
 
-			float aspectRatio = ClientSize.Width / (float)(ClientSize.Height);
+			Matrix4 projectionMatrix;
+
+			float aspectRatio = (float)ClientSize.Width / ClientSize.Height;
 			Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, aspectRatio, 1, 100, out projectionMatrix);
-			modelviewMatrix = Matrix4.LookAt(new Vector3(0, 3, 5), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
-
+			Matrix4 modelviewMatrix = camera.GetViewMatrix();
 			GL.UniformMatrix4(projectionMatrixLocation, false, ref projectionMatrix);
 			GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
 		}
@@ -75,8 +83,8 @@ namespace TGC.OpenTK
 			base.OnResize(e);
 
 			GL.Viewport(X, Y, Width, Height);
-
-			Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 1.0f, 64.0f);
+			Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)Width / Height, 1.0f, 64.0f);
+			//TODO MatrixMode deprecated in 3.2
 			GL.MatrixMode(MatrixMode.Projection);
 			GL.LoadMatrix(ref projection);
 		}
@@ -89,9 +97,9 @@ namespace TGC.OpenTK
 		{
 			base.OnUpdateFrame(e);
 
-			Matrix4 rotation = Matrix4.CreateRotationY((float)e.Time);
-			Matrix4.Mult(ref rotation, ref modelviewMatrix, out modelviewMatrix);
-			GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
+			//Matrix4 rotation = Matrix4.CreateRotationY((float)e.Time);
+			//Matrix4.Mult(ref rotation, ref modelviewMatrix, out modelviewMatrix);
+			//GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
 
 			if (Keyboard [Key.Escape]) 
 			{
@@ -109,9 +117,7 @@ namespace TGC.OpenTK
 
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-			Matrix4 modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitZ, Vector3.UnitY);
-			GL.MatrixMode(MatrixMode.Modelview);	
-			GL.LoadMatrix(ref modelview);
+			UpdateView();
 
 			triangle1.Render();
 			triangle2.Render();
@@ -119,6 +125,17 @@ namespace TGC.OpenTK
 			box2.Render();
 
 			SwapBuffers();
+		}
+
+		/// <summary>
+		///     Actualiza la Camara.
+		/// </summary>
+		protected void UpdateView()
+		{
+			Matrix4 modelview = camera.GetViewMatrix();
+			//TODO deprecated in v3.2
+			GL.MatrixMode(MatrixMode.Modelview);
+			GL.LoadMatrix(ref modelview);
 		}
 	}
 }
