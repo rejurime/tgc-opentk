@@ -13,7 +13,8 @@ namespace TGC.OpenTK
 	{
 		Triangle triangle1;
 		Triangle triangle2;
-		Box box;
+		Box box1;
+		Box box2;
 
 		int modelviewMatrixLocation;
 		int projectionMatrixLocation;
@@ -38,37 +39,13 @@ namespace TGC.OpenTK
 
 			triangle1 = new Triangle (new Vector3(0f, 0f, 4.0f), new Vector3(1.0f, 1.0f, 4.0f), new Vector3(0.0f, 1.0f, 4.0f), Color.DarkBlue);
 
-			Vector3 vertice1 = new Vector3(-1f, -1f, 4f);
-			Vector3 vertice2 = new Vector3(1f, -1f, 4f);
-			Vector3 vertice3 = new Vector3(0f, 0f, 4f);
-			triangle2 = new Triangle (vertice1, Color.Blue, vertice2, Color.Red, vertice3, Color.Green);
+			triangle2 = new Triangle (new Vector3(-1f, -1f, 4f), Color.Blue, new Vector3(1f, -1f, 4f), Color.Red, new Vector3(0f, 0f, 4f), Color.Green);
 
-			Vector3[] positionVboData = new[] {
-				new Vector3(-1.0f, -1.0f, 1.0f),
-				new Vector3(1.0f, -1.0f, 1.0f),
-				new Vector3(1.0f, 1.0f, 1.0f),
-				new Vector3(-1.0f, 1.0f, 1.0f),
-				new Vector3(-1.0f, -1.0f, -1.0f),
-				new Vector3(1.0f, -1.0f, -1.0f),
-				new Vector3(1.0f, 1.0f, -1.0f),
-				new Vector3(-1.0f, 1.0f, -1.0f) };
+			box1 = new Box();
+			box1.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
 
-			int[] indicesVboData = new[] {
-				// front face
-				0, 1, 2, 2, 3, 0,
-                // top face
-                3, 2, 6, 6, 7, 3,
-                // back face
-                7, 6, 5, 5, 4, 7,
-                // left face
-                4, 0, 3, 3, 7, 4,
-                // bottom face
-                0, 1, 5, 5, 4, 0,
-                // right face
-				1, 5, 6, 6, 2, 1 };
-
-			box = new Box(positionVboData, indicesVboData);
-			box.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
+			box2 = new Box(new Vector3(1,1,1), new Vector3(1,1,1), Color.SteelBlue);
+			box2.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
 
 			SetUniforms();
 		}
@@ -76,8 +53,8 @@ namespace TGC.OpenTK
 		void SetUniforms()
 		{
 			// Set uniforms
-			projectionMatrixLocation = GL.GetUniformLocation(box.ShaderProgramHandle, "projection_matrix");
-			modelviewMatrixLocation = GL.GetUniformLocation(box.ShaderProgramHandle, "modelview_matrix");
+			projectionMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "projection_matrix");
+			modelviewMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "modelview_matrix");
 
 			float aspectRatio = ClientSize.Width / (float)(ClientSize.Height);
 			Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, aspectRatio, 1, 100, out projectionMatrix);
@@ -138,7 +115,8 @@ namespace TGC.OpenTK
 
 			triangle1.Render();
 			triangle2.Render();
-			box.Render();
+			box1.Render();
+			box2.Render();
 
 			SwapBuffers();
 		}

@@ -71,7 +71,8 @@ namespace TGC.OpenTK.Geometries
 			Console.WriteLine(GL.GetShaderInfoLog(FragmentShaderHandle));
 		}
 
-		void CreateVBOs()
+		//TODO creo que se puede quitar el internal con algun template o algo del estilo
+		internal void CreateVBOs()
 		{
 			GL.GenBuffers(1, out positionVboHandle);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
@@ -89,7 +90,8 @@ namespace TGC.OpenTK.Geometries
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
 		}
 
-		void CreateVAOs()
+		//TODO creo que se puede quitar el internal con algun template o algo del estilo
+		internal void CreateVAOs()
 		{
 			// GL3 allows us to store the vertex layout in a "vertex array object" (VAO).
 			// This means we do not have to re-issue VertexAttribPointer calls
