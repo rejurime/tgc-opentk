@@ -39,9 +39,9 @@ namespace TGC.OpenTK
 			GL.ClearColor(Color.SteelBlue);
 			GL.Enable(EnableCap.DepthTest);
 
-			triangle1 = new Triangle (new Vector3(0f, 0f, 4.0f), new Vector3(1.0f, 1.0f, 4.0f), new Vector3(0.0f, 1.0f, 4.0f), Color.DarkBlue);
+			triangle1 = new Triangle (new Vector3(-1f, -1f, 4f), new Vector3(1f, -1f, 4f), new Vector3(0f, 0f, 4f), Color.DarkBlue);
 
-			triangle2 = new Triangle (new Vector3(-1f, -1f, 4f), Color.Blue, new Vector3(1f, -1f, 4f), Color.Red, new Vector3(0f, 0f, 4f), Color.Green);
+			triangle2 = new Triangle (new Vector3(-1f, -1f, 0f), Color.Blue, new Vector3(1f, -1f, 0f), Color.Red, new Vector3(0f, 1f, 0f), Color.Green);
 
 			box1 = new Box();
 			box1.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
@@ -73,9 +73,7 @@ namespace TGC.OpenTK
 		}
 
 		/// <summary>
-		/// Called when your window is resized. Set your viewport here. It is also
-		/// a good place to set up your projection matrix (which probably changes
-		/// along when the aspect ratio of your window).
+		/// Called when your window is resized. Set your viewport here. It is also a good place to set up your projection matrix (which probably changes along when the aspect ratio of your window).
 		/// </summary>
 		/// <param name="e">Not used.</param>
 		protected override void OnResize(EventArgs e)
@@ -100,7 +98,7 @@ namespace TGC.OpenTK
 			//Matrix4 rotation = Matrix4.CreateRotationY((float)e.Time);
 			//Matrix4.Mult(ref rotation, ref modelviewMatrix, out modelviewMatrix);
 			//GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
-
+			triangle2.Update();
 			if (Keyboard [Key.Escape]) 
 			{
 				Exit ();

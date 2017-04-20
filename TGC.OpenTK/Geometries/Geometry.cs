@@ -1,53 +1,40 @@
 ﻿using System;
-using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 namespace TGC.OpenTK.Geometries
 {
 	public abstract class Geometry
 	{
-		internal Vector3[] PositionVboData { get; set;}
-		internal int[] IndicesVboData { get; set;}
-		
-		int vaoHandle;
-		int positionVboHandle;
-		int normalVboHandle;
-		int eboHandle;
+		/// <summary>
+		/// ID of our program on the graphics card
+		/// </summary>
+		internal int ShaderProgramHandle { get; set; }
 
+		/// <summary>
+		/// Address of the vertex shader
+		/// </summary>
+		internal int VertexShaderHandle { get; set; }
 		string VertexShaderSource { get; set; }
-		string FragmentShaderSource { get; set; } 
-		int VertexShaderHandle { get; set; }
-		int FragmentShaderHandle { get; set; }
-		public int ShaderProgramHandle { get; set;}
 
-		//TODO hay que ver si realmente deberia estar este constructor vacio
-		internal Geometry()
-		{
-			
-		}
-
-		public Geometry(Vector3[] positionVboData, int[] indicesVboData)
-		{
-			PositionVboData = positionVboData;
-			IndicesVboData = indicesVboData;
-
-			CreateVBOs();
-			CreateVAOs();
-		}
+		/// <summary>
+		/// Address of the fragment shader
+		/// </summary>
+		internal int FragmentShaderHandle { get; set; }
+		string FragmentShaderSource { get; set; }
 
 		public void AttachShaders(string vertexShader, string fragmentShader)
 		{
 			AttachVertexShader(vertexShader);
 			AttachFragmentShader(fragmentShader);
 
-			// Create program
+			// Create program returns the ID for a new program object.
 			ShaderProgramHandle = GL.CreateProgram();
 
 			GL.AttachShader(ShaderProgramHandle, VertexShaderHandle);
 			GL.AttachShader(ShaderProgramHandle, FragmentShaderHandle);
 
+			// Now that the shaders are added, the program needs to be linked.
 			GL.LinkProgram(ShaderProgramHandle);
-
 			Console.WriteLine(GL.GetProgramInfoLog(ShaderProgramHandle));
 
 			GL.UseProgram(ShaderProgramHandle);
@@ -56,69 +43,31 @@ namespace TGC.OpenTK.Geometries
 		void AttachVertexShader(string vertexShader)
 		{
 			VertexShaderSource = vertexShader;
-			VertexShaderHandle = GL.CreateShader(ShaderType.VertexShader);
-			GL.ShaderSource(VertexShaderHandle, VertexShaderSource);
-			GL.CompileShader(VertexShaderHandle);
-			Console.WriteLine(GL.GetShaderInfoLog(VertexShaderHandle));
+			VertexShaderHandle = AttachShader(vertexShader, ShaderType.VertexShader);
 		}
 
 		void AttachFragmentShader(string fragmentShader)
 		{
 			FragmentShaderSource = fragmentShader;
-			FragmentShaderHandle = GL.CreateShader(ShaderType.FragmentShader);
-			GL.ShaderSource(FragmentShaderHandle, FragmentShaderSource);
-			GL.CompileShader(FragmentShaderHandle);
-			Console.WriteLine(GL.GetShaderInfoLog(FragmentShaderHandle));
+			FragmentShaderHandle = AttachShader(fragmentShader, ShaderType.FragmentShader);
 		}
 
-		//TODO creo que se puede quitar el internal con algun template o algo del estilo
-		internal void CreateVBOs()
+		/// <summary>
+		/// This creates a new shader and compiles it.
+		/// </summary>
+		/// <returns>The shader handler.</returns>
+		/// <param name="shaderSource">Shader code as String.</param>
+		/// <param name="shaderType">Shader type from the ShaderType enum.</param>
+		int AttachShader(String shaderSource, ShaderType shaderType)
 		{
-			GL.GenBuffers(1, out positionVboHandle);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVboData.Length * Vector3.SizeInBytes), PositionVboData, BufferUsageHint.StaticDraw);
+			int shaderHandler = GL.CreateShader(shaderType);
+			GL.ShaderSource(shaderHandler, shaderSource);
+			GL.CompileShader(shaderHandler);
+			Console.WriteLine(GL.GetShaderInfoLog(shaderHandler));
 
-			GL.GenBuffers(1, out normalVboHandle);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVboData.Length * Vector3.SizeInBytes), PositionVboData, BufferUsageHint.StaticDraw);
-
-			GL.GenBuffers(1, out eboHandle);
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-			GL.BufferData(BufferTarget.ElementArrayBuffer, new IntPtr(sizeof(uint) * IndicesVboData.Length), IndicesVboData, BufferUsageHint.StaticDraw);
-
-			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+			return shaderHandler;
 		}
 
-		//TODO creo que se puede quitar el internal con algun template o algo del estilo
-		internal void CreateVAOs()
-		{
-			// GL3 allows us to store the vertex layout in a "vertex array object" (VAO).
-			// This means we do not have to re-issue VertexAttribPointer calls
-			// every time we try to use a different vertex layout - these calls are
-			// stored in the VAO so we simply need to bind the correct VAO.
-			GL.GenVertexArrays(1, out vaoHandle);
-			GL.BindVertexArray(vaoHandle);
-
-			GL.EnableVertexAttribArray(0);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-			GL.BindAttribLocation(ShaderProgramHandle, 0, "in_position");
-
-			GL.EnableVertexAttribArray(1);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-			GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-			GL.BindAttribLocation(ShaderProgramHandle, 1, "in_normal");
-
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-
-			GL.BindVertexArray(0);
-		}
-
-		public void Render()
-		{
-			GL.BindVertexArray(vaoHandle);
-			GL.DrawElements(PrimitiveType.Triangles, IndicesVboData.Length, DrawElementsType.UnsignedInt, IntPtr.Zero);
-		}
+		public abstract void Render();
 	}
 }
