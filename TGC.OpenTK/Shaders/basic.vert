@@ -1,19 +1,10 @@
 #version 130
 
-precision highp float;
+varying vec3 vertex_color;
 
-uniform mat4 projection_matrix;
-uniform mat4 modelview_matrix;
-
-in vec3 in_position;
-in vec3 in_normal;
-
-out vec3 normal;
-
-void main(void)
+void main()
 {
-  //works only for orthogonal modelview
-  normal = (modelview_matrix * vec4(in_normal, 0)).xyz;
-  
-  gl_Position = projection_matrix * modelview_matrix * vec4(in_position, 1);
+  //gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+  gl_Position = ftransform();
+  vertex_color = gl_Vertex.xyz;
 }

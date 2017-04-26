@@ -39,16 +39,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Shaders\basic.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="Shaders\basic.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Shaders\fs.glsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Shaders\vs.glsl">
+    <None Include="Shaders\basic.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -59,6 +53,7 @@
     <Compile Include="Geometries\Geometry.cs" />
     <Compile Include="Geometries\Box.cs" />
     <Compile Include="Cameras\StaticCamera.cs" />
+    <Compile Include="Shaders\Shader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Geometries\" />

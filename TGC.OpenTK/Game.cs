@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -11,7 +11,9 @@ namespace TGC.OpenTK
 {
 	class Game : GameWindow
 	{
-		StaticCamera camera;
+		float AspectRatio;
+
+		StaticCamera Camera;
 
 		Triangle triangle1;
 		Triangle triangle2;
@@ -27,7 +29,7 @@ namespace TGC.OpenTK
 		public Game(int width, int height) : base(width, height, GraphicsMode.Default)
 		{
 			Title = "Probando OpenTK...";
-			VSync = VSyncMode.On;
+			AspectRatio = (float)width / height;
 		}
 
 		/// <summary>Load resources here.</summary>
@@ -39,37 +41,22 @@ namespace TGC.OpenTK
 			GL.ClearColor(Color.SteelBlue);
 			GL.Enable(EnableCap.DepthTest);
 
-			triangle1 = new Triangle (new Vector3(-1f, -1f, 4f), new Vector3(1f, -1f, 4f), new Vector3(0f, 0f, 4f), Color.DarkBlue);
+			Camera = new StaticCamera(new Vector3(10, 5, 0), Vector3.Zero, AspectRatio);
 
-			triangle2 = new Triangle (new Vector3(-1f, -1f, 0f), Color.Blue, new Vector3(1f, -1f, 0f), Color.Red, new Vector3(0f, 1f, 0f), Color.Green);
+			var vertexShader = File.ReadAllText(@"Shaders/basic.vert");
+			var fragmentShader = File.ReadAllText(@"Shaders/basic.frag");
+
+			triangle1 = new Triangle(new Vector3(-1f, -1f, 4f), new Vector3(1f, -1f, 4f), new Vector3(0f, 0f, 4f), Color.DarkBlue);
+			triangle1.AttachShaders(vertexShader, fragmentShader);
+
+			triangle2 = new Triangle(new Vector3(-1f, -1f, 0f), Color.Blue, new Vector3(1f, -1f, 0f), Color.Red, new Vector3(0f, 1f, 0f), Color.Green);
+			triangle2.AttachShaders(vertexShader, fragmentShader);
 
 			box1 = new Box();
-			box1.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
+			box1.AttachShaders(vertexShader, fragmentShader);
 
-			box2 = new Box(new Vector3(1,1,1), new Vector3(1,1,1), Color.SteelBlue);
-			box2.AttachShaders(File.ReadAllText(@"Shaders/basic.vert"), File.ReadAllText(@"Shaders/basic.frag"));
-
-			camera = new StaticCamera(new Vector3(10, 5, 0), Vector3.Zero);
-
-			SetUniforms();
-		}
-
-		/// <summary>
-		/// Sets the uniforms.
-		/// </summary>
-		void SetUniforms()
-		{
-			// Set uniforms
-			int projectionMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "projection_matrix");
-			int modelviewMatrixLocation = GL.GetUniformLocation(box1.ShaderProgramHandle, "modelview_matrix");
-
-			Matrix4 projectionMatrix;
-
-			float aspectRatio = (float)ClientSize.Width / ClientSize.Height;
-			Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, aspectRatio, 1, 100, out projectionMatrix);
-			Matrix4 modelviewMatrix = camera.GetViewMatrix();
-			GL.UniformMatrix4(projectionMatrixLocation, false, ref projectionMatrix);
-			GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
+			box2 = new Box(new Vector3(1, 1, 1), new Vector3(1, 1, 1), Color.SteelBlue);
+			box2.AttachShaders(vertexShader, fragmentShader);
 		}
 
 		/// <summary>
@@ -81,10 +68,7 @@ namespace TGC.OpenTK
 			base.OnResize(e);
 
 			GL.Viewport(X, Y, Width, Height);
-			Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, (float)Width / Height, 1.0f, 64.0f);
-			//TODO MatrixMode deprecated in 3.2
-			GL.MatrixMode(MatrixMode.Projection);
-			GL.LoadMatrix(ref projection);
+			Camera.UpdateFieldOfView((float)Width / Height);
 		}
 
 		/// <summary>
@@ -95,13 +79,14 @@ namespace TGC.OpenTK
 		{
 			base.OnUpdateFrame(e);
 
-			//Matrix4 rotation = Matrix4.CreateRotationY((float)e.Time);
-			//Matrix4.Mult(ref rotation, ref modelviewMatrix, out modelviewMatrix);
-			//GL.UniformMatrix4(modelviewMatrixLocation, false, ref modelviewMatrix);
+			triangle1.Update();
 			triangle2.Update();
-			if (Keyboard [Key.Escape]) 
+			box1.Update();
+			box2.Update();
+
+			if (Keyboard[Key.Escape])
 			{
-				Exit ();
+				Exit();
 			}
 		}
 
@@ -130,10 +115,7 @@ namespace TGC.OpenTK
 		/// </summary>
 		protected void UpdateView()
 		{
-			Matrix4 modelview = camera.GetViewMatrix();
-			//TODO deprecated in v3.2
-			GL.MatrixMode(MatrixMode.Modelview);
-			GL.LoadMatrix(ref modelview);
+			Camera.UpdateModelView();
 		}
 	}
 }

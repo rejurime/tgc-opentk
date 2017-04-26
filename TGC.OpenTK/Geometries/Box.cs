@@ -10,28 +10,17 @@ namespace TGC.OpenTK.Geometries
 	/// </summary>
 	public class Box : Geometry
 	{
-		Vector3[] PositionVboData { get; set; }
-		int[] IndicesVboData { get; set; }
-
 		int vertexArrayObjectsHandle;
 		int positionVboHandle;
-		int normalVboHandle;
 		int elementBufferObjectsHandle;
-
-		//element
-
-		/// <summary>
-		///     Color de los vertices de la caja
-		/// </summary>
-		public Color Color { get; set; }
 
 		public Box(Vector3[] positionVboData, int[] indicesVboData)
 		{
-			PositionVboData = positionVboData;
-			IndicesVboData = indicesVboData;
+			PositionVertexBufferObjectData = positionVboData;
+			IndicesVertexBufferObjectData = indicesVboData;
 
 			CreateVertexBufferObjects();
-			CreateVAOs();
+			CreateVertexArrayObjects();
 		}
 
 		/// <summary>
@@ -39,7 +28,6 @@ namespace TGC.OpenTK.Geometries
 		/// </summary>
 		public Box() : this(Vector3.Zero, Vector3.One)
 		{
-
 		}
 
 		/// <summary>
@@ -49,7 +37,6 @@ namespace TGC.OpenTK.Geometries
 		/// <returns>Caja creada</returns>
 		public Box(Vector3 size) : this(Vector3.Zero, size)
 		{
-
 		}
 
 		/// <summary>
@@ -60,13 +47,16 @@ namespace TGC.OpenTK.Geometries
 		/// <returns>Caja creada</returns>
 		public Box(Vector3 center, Vector3 size)
 		{
-			Color = Color.White;
+			ColorVertexBufferObjectData = new Vector3[] { new Vector3(1f, 0f, 0f),
+				new Vector3( 0f, 0f, 1f), new Vector3( 0f,  1f, 0f),new Vector3(1f, 0f, 0f),
+				new Vector3( 0f, 0f, 1f), new Vector3( 0f,  1f, 0f),new Vector3(1f, 0f, 0f),
+				new Vector3( 0f, 0f, 1f)};
 
 			var x = size.X / 2;
 			var y = size.Y / 2;
 			var z = size.Z / 2;
 
-			PositionVboData = new[]{
+			PositionVertexBufferObjectData = new[]{
 				new Vector3(-x + center.X, -y + center.Y, z  + center.Z),
 				new Vector3(x + center.X, -y + center.Y, z  + center.Z),
 				new Vector3(x + center.X, y + center.Y, z  + center.Z),
@@ -76,7 +66,7 @@ namespace TGC.OpenTK.Geometries
 				new Vector3(x + center.X, y + center.Y, -z  + center.Z),
 				new Vector3(-x + center.X, y + center.Y, -z  + center.Z)};
 
-			IndicesVboData = new[] {
+			IndicesVertexBufferObjectData = new[] {
                 // Top face
                 3, 2, 6, 6, 7, 3,
                 // Back face
@@ -89,7 +79,7 @@ namespace TGC.OpenTK.Geometries
 				1, 5, 6, 6, 2, 1 };
 
 			CreateVertexBufferObjects();
-			CreateVAOs();
+			CreateVertexArrayObjects();
 		}
 
 		/// <summary>
@@ -101,57 +91,42 @@ namespace TGC.OpenTK.Geometries
 		/// <returns>Caja creada</returns>
 		public Box(Vector3 center, Vector3 size, Color color) : this(center, size)
 		{
-			Color = color;
+			Vector3 vectorColor = new Vector3(color.R, color.G, color.B);
+			ColorVertexBufferObjectData = new Vector3[] { vectorColor, vectorColor, vectorColor, vectorColor, vectorColor, vectorColor, vectorColor, vectorColor };
 		}
 
-		//TODO creo que se puede quitar el internal con algun template o algo del estilo
 		internal void CreateVertexBufferObjects()
 		{
-			GL.GenBuffers(1, out positionVboHandle);
+			positionVboHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVboData.Length * Vector3.SizeInBytes), PositionVboData, BufferUsageHint.StaticDraw);
+			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVertexBufferObjectData.Length * Vector3.SizeInBytes), PositionVertexBufferObjectData, BufferUsageHint.StaticDraw);
 
-			GL.GenBuffers(1, out normalVboHandle);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-			GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(PositionVboData.Length * Vector3.SizeInBytes), PositionVboData, BufferUsageHint.StaticDraw);
-
-			GL.GenBuffers(1, out elementBufferObjectsHandle);
+			elementBufferObjectsHandle = GL.GenBuffer();
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObjectsHandle);
-			GL.BufferData(BufferTarget.ElementArrayBuffer, new IntPtr(sizeof(uint) * IndicesVboData.Length), IndicesVboData, BufferUsageHint.StaticDraw);
-
-			GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-			GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+			GL.BufferData(BufferTarget.ElementArrayBuffer, new IntPtr(sizeof(uint) * IndicesVertexBufferObjectData.Length), IndicesVertexBufferObjectData, BufferUsageHint.StaticDraw);
 		}
 
-		//TODO creo que se puede quitar el internal con algun template o algo del estilo
-		internal void CreateVAOs()
+		internal void CreateVertexArrayObjects()
 		{
-			// GL3 allows us to store the vertex layout in a "vertex array object" (VAO).
-			// This means we do not have to re-issue VertexAttribPointer calls
-			// every time we try to use a different vertex layout - these calls are
-			// stored in the VAO so we simply need to bind the correct VAO.
-			GL.GenVertexArrays(1, out vertexArrayObjectsHandle);
+			vertexArrayObjectsHandle = GL.GenVertexArray();
 			GL.BindVertexArray(vertexArrayObjectsHandle);
 
 			GL.EnableVertexAttribArray(0);
 			GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
 			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-			GL.BindAttribLocation(ShaderProgramHandle, 0, "in_position");
-
-			GL.EnableVertexAttribArray(1);
-			GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-			GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, true, Vector3.SizeInBytes, 0);
-			GL.BindAttribLocation(ShaderProgramHandle, 1, "in_normal");
 
 			GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObjectsHandle);
-
-			GL.BindVertexArray(0);
 		}
 
 		public override void Render()
 		{
 			GL.BindVertexArray(vertexArrayObjectsHandle);
-			GL.DrawElements(PrimitiveType.Triangles, IndicesVboData.Length, DrawElementsType.UnsignedInt, IntPtr.Zero);
+			GL.DrawElements(PrimitiveType.Triangles, IndicesVertexBufferObjectData.Length, DrawElementsType.UnsignedInt, IntPtr.Zero);
+		}
+
+		public override void Update()
+		{
+
 		}
 	}
 }
