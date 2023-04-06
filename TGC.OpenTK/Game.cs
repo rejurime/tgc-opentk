@@ -84,7 +84,7 @@ namespace TGC.OpenTK
 			box1.Update();
 			box2.Update();
 
-			if (Keyboard[Key.Escape])
+            if (Keyboard.GetState()[Key.Escape])
 			{
 				Exit();
 			}
